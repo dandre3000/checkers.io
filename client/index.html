@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang='en'>
+	<head>
+		<meta charset='utf-8'>
+		<meta name='viewport' content='width=device-width, initial-scale=1.0'>
+		<title>DeAundre Payne Portfolio</title>
+		<link href='../css/style.css' rel='stylesheet' type='text/css'>
+		<link href='../css/chat.css' rel='stylesheet' type='text/css'>
+		
+	</head>
+	<body>
+		<main>
+			<section>
+				<div class="side-content-sm"></div>
+				<div class="main-content-lg">
+					<h1>Checkers</h1>
+					<div class="content-body">
+						<ul class="pages">
+							<li class="chat page">
+								<h3 class='username'></h3>
+								<div id='game'>
+									<select id='format'>
+										<option>American</option>
+										<option>South African</option>
+									</select>
+									<button class='join-match' placeholder="Join Match"/>Join Match</button>
+									<button class='leave-match' placeholder="Leave Match"/>Leave Match</button>
+								</div>
+								<div class="chatArea">
+									<ul class="messages"></ul>
+								</div>
+								<input class="inputMessage" placeholder="Type here..." maxlength="140" />
+							</li>
+							<li class="login page">
+								<div class="form">
+									<h3 class="title">What's your nickname?</h3>
+									<input class="usernameInput" type="text" maxlength="14" />
+								</div>
+							</li>
+						</ul>
+					</div>
+				</div>
+				<div class="side-content-sm"></div>
+			</section>
+			<footer>
+				<div class="side-content"></div>
+				<div class="main-content">
+					<div class="content-body">
+						<p>Copyright &copy; DeAundre Payne 2019</p>
+					</div>
+				</div>
+				<div class="side-content"></div>
+			</footer>
+		</main>
+		<script src='../js/jquery-3.4.1.min.js'></script>
+		<script src="/socket.io/socket.io.js"></script>
+		<script type="module" src="src/main.js"></script>
+	</body>
+</html>

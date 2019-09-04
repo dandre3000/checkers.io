@@ -1,0 +1,1 @@
+document.write("<div id='mainheader'><a href='../index.html'><h1>DeAundre Payne</h1></a><a id='about' href='../about.html'>About</a></div>");
