@@ -189,6 +189,12 @@ module.exports = new function() {
 			if (id) {
 				socket.join(id);
 				if (match.start) {
+					match.timer.ms = match.timer.tmpMs;
+					match.timer.restart(match.timer.ms, 1000, () => {
+						this.namespace.to(id).emit('state update', {turnTime: match.timer.getTime()});
+						console.log(match.timer.getTime());
+					});
+					
 					socket.emit('restart game', {
 						id: match.id,
 						players: [...match.players],
@@ -259,9 +265,19 @@ module.exports = new function() {
 	
 	
 	
-	this.disconnect = (socket) => {
+	this.disconnect = socket => {
 		const id = alreadyInGame(socket.username);
-		socket.to(id).emit('drop player', socket.username);
+		if (id) {
+			const match = gameCollection.gameList.get(id);
+			match.timer.tmpMs = match.timer.ms;
+			match.timer.restart(30000, 1000, () => {
+				this.namespace.to(id).emit('state update', {turnTime: match.timer.getTime()});
+				console.log(match.timer.getTime());
+			});
+			
+			socket.to(id).emit('drop player', socket.username);
+		}
+		
 		
 		login.disconnect(socket);
 	};
