@@ -35,7 +35,8 @@ const checkers = new function() {
 	this.playerIdx = 1; // is this player 1, 2...
 	this.turn = 1; // current turn
 	this.score = 0;
-	this.turnTime = '0:30';
+	this.timer1 = '0:30';
+	this.timer2 = '0:30';
 	
 	// board
 	this.board = new function() {
@@ -251,7 +252,7 @@ const checkers = new function() {
 			ctx.fillRect(0, 0, 32, 32);
 			ctx.font = '10px sans-serif';
 			ctx.fillStyle = 'white';
-			ctx.fillText(this.turnTime, 16, 16);
+			ctx.fillText(this.timer1, 16, 16);
 		}
 		
 		if (set.has('timer 2') || arr == 'all') {
@@ -260,7 +261,7 @@ const checkers = new function() {
 			ctx.fillRect(canv.width - 32, 0, 32, 32);
 			ctx.font = '10px sans-serif';
 			ctx.fillStyle = 'white';
-			ctx.fillText(this.turnTime, canv.width - 16, 16);
+			ctx.fillText(this.timer2, canv.width - 16, 16);
 		}
 	};
 	
@@ -544,12 +545,24 @@ const checkers = new function() {
 				setupMoves();
 				render(['board']);
 			} else if (key == 'turn') {
-				this.turnTime = '0:30';
+				this['timer'+this.turn] = '0:30';
 				this[key] = state[key];
 				render(['hud', 'timer 1', 'timer 2']);
 			} else if (key == 'turnTime') {
-				this[key] = state[key];
+				this['timer'+this.turn] = state[key];
 				render(['timer '+this.turn]);
+				
+				console.log('player '+this.turn, this['timer'+this.turn]);
+			} else if (key == 'timer1') {
+				this[key] = state[key];
+				render(['timer 1']);
+				
+				console.log('player 1', this[key]);
+			} else if (key == 'timer2') {
+				this[key] = state[key];
+				render(['timer 2']);
+				
+				console.log('player 2', this[key]);
 			} else {
 				this[key] = state[key];
 			}

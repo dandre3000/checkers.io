@@ -17,16 +17,18 @@
 const login = require('./login');
 const Timer = require('./timer');
 
-const MAX_PLAYERS = 2; // 2 player only for now
-
 module.exports = new function() {
-	this.namespace = null;
+	const MAX_PLAYERS = 2; // 2 player only for now
+	const TURN_TIME_LIMIT = 30 * 1000 // time limit to end your turn
+	const RECONN_TIME_LIMIT = 30 * 1000 // time limit to reconnect to a match
 	
 	// holds all games and info
 	const matchCollection = new function() {
 		this.count = 0,
 		this.list = new Map()
 	};
+	
+	this.namespace = null;
 	
 	/**
 	 * recursive game search
@@ -60,6 +62,7 @@ module.exports = new function() {
 	 * @param {[object]} options
 	 */
 	const buildMatch = (socket, options) => {
+		// match object
 		const match = {};
 		
 		let id = (Math.random() + 1).toString(36).slice(2, 18); // random id
@@ -70,17 +73,23 @@ module.exports = new function() {
 		
 		match.id = id;
 		match.start = false;
-		match.players = new Set();
-		match.players.add(socket.username);
+		match.players = new Map();
+		match.players.set(socket.username, {
+			order: 1,
+			timer: new Timer(RECONN_TIME_LIMIT, () => {
+				this.namespace.to(id).emit('timeout');
+			})
+		});
 		if (options) {
 			match.options = options;
 			console.log(options);
 		}
 		match.state = {turn: 1};
-		match.timer = new Timer(30000, () => {
+		match.timer = new Timer(TURN_TIME_LIMIT, () => {
 			this.namespace.to(id).emit('timeout');
 		});
 		
+		// add match to list
 		matchCollection.count++;
 		console.log(id, match);
 		matchCollection.list.set(id, match);
@@ -103,26 +112,29 @@ module.exports = new function() {
 	 * @param {object} match
 	 */
 	const joinMatch = (socket, match) => {
-		match.players.add(socket.username);
-		//match['playerTwo'] = socket.username;
+		match.players.set(socket.username, {
+			order: match.players.size + 1,
+			timer: new Timer(RECONN_TIME_LIMIT, () => {
+				this.namespace.to(id).emit('timeout');
+			})
+		});
 		
 		const id = match['id'];
 		socket.join(id);
 		
 		socket.emit('joinSuccess', {
 			id: id,
-			numPlayers: [...match.players].length
+			numPlayers: match.players.size
 		});
 		
 		if (match.players.size == MAX_PLAYERS) {
 			match.start = true;
 			match.timer.start(1000, () => {
 				this.namespace.to(id).emit('state update', {turnTime: match.timer.getTime()});
-				console.log(match.timer.getTime());
 			});
 			this.namespace.to(id).emit('start game', {
 				id: match.id,
-				players: [...match.players],
+				players: [...match.players.keys()],
 				options: match.options
 			});
 			this.namespace.to(id).emit('state update', match.state);
@@ -138,13 +150,10 @@ module.exports = new function() {
 	 */
 	const alreadyInGame = username => {
 		for (let i = 0; i < matchCollection.count; i++) {
-			const game = [...matchCollection.list][i][1];
+			const match = [...matchCollection.list][i][1];
 			
-			for (let j = 0; j < game.players.size; j++) {
-				const player = [...game.players][j];
-				if (player == username /*plyr1Tmp == socket.username || plyr2Tmp == socket.username*/){
-					return game['id'];
-				}
+			if (match.players.has(username)) {
+				return match['id'];
 			}
 		}
 		
@@ -219,19 +228,21 @@ module.exports = new function() {
 				socket.join(id);
 				// only restart live matches
 				if (match.start) {
-					// revert timer to the time it had when the player disconnected
-					if ([...match.players][match.state.turn - 1] == socket.username) {
-						match.timer.ms = match.timer.tmpMs;
+					// stop disconnect timer
+					const player = match.players.get(socket.username);
+					player.timer.stop();
+					player.timer.ms = RECONN_TIME_LIMIT;
+					// if its still the players turn revert back to turn timer
+					if (match.state.turn == player.order) {
 						match.timer.restart(match.timer.ms, 1000, () => {
 							this.namespace.to(id).emit('state update', {turnTime: match.timer.getTime()});
-							console.log(match.timer.getTime());
 						});
 					}
 					
 					// only restart this player
 					socket.emit('restart game', {
 						id: match.id,
-						players: [...match.players],
+						players: [...match.players.keys()],
 						options: match.options
 					});
 					
@@ -273,9 +284,8 @@ module.exports = new function() {
 			const match = matchCollection.list.get(id);
 			Object.keys(state).forEach(key => {
 				if (key == 'turn') {
-					match.timer.restart(30000, 1000, () => {
+					match.timer.restart(TURN_TIME_LIMIT, 1000, () => {
 						this.namespace.to(id).emit('state update', {turnTime: match.timer.getTime()});
-						console.log(match.timer.getTime());
 					});
 				}
 				match.state[key] = state[key];
@@ -318,13 +328,13 @@ module.exports = new function() {
 		if (id) {
 			const match = matchCollection.list.get(id);
 			// if it's the player's turn save current time left and start disconnect timer
-			if ([...match.players][match.state.turn - 1] == socket.username) {
-				match.timer.tmpMs = match.timer.ms;
-				match.timer.restart(30000, 1000, () => {
-					this.namespace.to(id).emit('state update', {turnTime: match.timer.getTime()});
-					console.log(match.timer.getTime());
-				});
+			const player = match.players.get(socket.username);
+			if (match.state.turn == player.order) {
+				match.timer.stop();
 			}
+			player.timer.start(1000, () => {
+				this.namespace.to(id).emit('state update', {['timer'+player.order]: player.timer.getTime()}); // strings are arrays
+			});
 			
 			socket.to(id).emit('drop player', socket.username);
 		}
