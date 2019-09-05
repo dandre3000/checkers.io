@@ -75,5 +75,6 @@ typings/
 # FuseBox cache
 .fusebox/
 
-# Development server
+# Development files
 dev-server.bat
+update-heroku.bat
