@@ -9,17 +9,20 @@
 
 'use strict';
 
-
-
 module.exports = new function() {
-	// total users
-	var users = 0;
-
-	// usernames
-	const names = new Set();
+	const names = new Set(); // usernames
+	var users = 0; // total users
 	
-	this.connect = (socket) => {
-		socket.on('add user', (username) => {
+	/**
+	 * create socket events
+	 * @param {object}
+	 */
+	this.connect = socket => {
+		/**
+		 * login
+		 * @param {string}
+		 */
+		socket.on('add user', username => {
 			// can't login twice
 			if (socket.username) {
 				return;
@@ -46,10 +49,16 @@ module.exports = new function() {
 			console.log(users);
 		});
 		
+		/**
+		 * emit total users
+		 */
 		socket.on('get total users', () => {
 			socket.emit('total users', users);
 		});
 		
+		/**
+		 * emit username list
+		 */
 		socket.on('get usernames', () => {
 			socket.emit('usernames', {
 				usernames: names
@@ -59,9 +68,13 @@ module.exports = new function() {
 		
 	};
 	
-	this.disconnect = (socket) => {
+	/**
+	 * logout
+	 * @param {object}
+	 */
+	this.disconnect = socket => {
 		console.log(users, names);
-		// only disconnect if logged in
+		// only logout if logged in
 		// remove username from server and reduce user count
 		if (socket.username) {
 			--users;
@@ -72,9 +85,7 @@ module.exports = new function() {
 			socket.broadcast.emit('user left', {
 				username: socket.username
 			});
-			socket.broadcast.emit('total users', {
-				numUsers: users
-			});
+			socket.broadcast.emit('total users', users);
 			socket.username = null;
 			
 			console.log(socket.id, 'disconnect');
