@@ -123,6 +123,6 @@ const matchmaker = new function() {
 		};
 		
 		// if user is in a match on the server join it
-		socket.emit('rejoin', game.order);
+		socket.emit('rejoin');
 	};
 };
