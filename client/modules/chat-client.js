@@ -4,8 +4,7 @@
  * usernames are colored
  * login page
  *
- * todo:
- * logging out
+ * todo: separate login from chat
  */
 
 import {log} from './log.js';
