@@ -76,6 +76,7 @@ module.exports = new function() {
 		match.players = new Map();
 		match.players.set(socket.username, {
 			order: 1,
+			connected: true,
 			timer: new Timer(RECONN_TIME_LIMIT, () => {
 				this.namespace.to(id).emit('timeout');
 			})
@@ -114,6 +115,7 @@ module.exports = new function() {
 	const joinMatch = (socket, match) => {
 		match.players.set(socket.username, {
 			order: match.players.size + 1,
+			connected: true,
 			timer: new Timer(RECONN_TIME_LIMIT, () => {
 				this.namespace.to(id).emit('timeout');
 			})
@@ -230,8 +232,9 @@ module.exports = new function() {
 				if (match.start) {
 					// stop disconnect timer
 					const player = match.players.get(socket.username);
+					player.connected = true;
 					player.timer.stop();
-					player.timer.ms = RECONN_TIME_LIMIT;
+					//player.timer.ms = RECONN_TIME_LIMIT;
 					// if its still the players turn revert back to turn timer
 					if (match.state.turn == player.order) {
 						match.timer.restart(match.timer.ms, 1000, () => {
@@ -284,9 +287,32 @@ module.exports = new function() {
 			const match = matchCollection.list.get(id);
 			Object.keys(state).forEach(key => {
 				if (key == 'turn') {
-					match.timer.restart(TURN_TIME_LIMIT, 1000, () => {
-						this.namespace.to(id).emit('state update', {turnTime: match.timer.getTime()});
+					const currentPlayer = match.players.get(socket.username);
+					const players = [...match.players];
+					
+					match.timer.stop();
+					match.timer.ms = TURN_TIME_LIMIT;
+					
+					currentPlayer.timer.ms = RECONN_TIME_LIMIT;
+					
+					players.forEach(p => {
+						const username = p[0];
+						const player = p[1];
+						// if next player is connected start turn timer else start disconnect timer
+						if (player.order == state[key]) {
+							console.log('next player is '+username);
+							if (player.connected) {
+								match.timer.start(1000, () => {
+									this.namespace.to(id).emit('state update', {turnTime: match.timer.getTime()});
+								});
+							} else {
+								player.timer.start(1000, () => {
+									this.namespace.to(id).emit('state update', {['timer'+player.order]: player.timer.getTime()}); // strings are arrays
+								});
+							}
+						}
 					});
+					
 				}
 				match.state[key] = state[key];
 			});
@@ -331,10 +357,12 @@ module.exports = new function() {
 			const player = match.players.get(socket.username);
 			if (match.state.turn == player.order) {
 				match.timer.stop();
+				
+				player.timer.start(1000, () => {
+					this.namespace.to(id).emit('state update', {['timer'+player.order]: player.timer.getTime()}); // strings are arrays
+				});
 			}
-			player.timer.start(1000, () => {
-				this.namespace.to(id).emit('state update', {['timer'+player.order]: player.timer.getTime()}); // strings are arrays
-			});
+			player.connected = false;
 			
 			socket.to(id).emit('drop player', socket.username);
 		}

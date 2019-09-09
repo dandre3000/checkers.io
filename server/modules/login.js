@@ -91,4 +91,8 @@ module.exports = new function() {
 			console.log(socket.id, 'disconnect');
 		}
 	};
+	
+	this.reconnect = socket => {
+		
+	};
 };

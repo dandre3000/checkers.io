@@ -29,8 +29,7 @@ $(() => {
 	});
 	
 	// reconnection
-	sock.on('reconnect', (data) => {
-		//a.reconnect(data);
-		chat.reconnect(data);
+	sock.on('reconnect', () => {
+		chat.reconnect(sock);
 	});
 });

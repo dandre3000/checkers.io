@@ -325,7 +325,7 @@ const chat = new function() {
 	
 	// reconnection
 	this.reconnect = socket => {
-		log.text('you have been reconnected');
+		log.text(socket.username+' you have been reconnected');
 		if (socket.username) {
 			socket.emit('add user', socket.username);
 		}

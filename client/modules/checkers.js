@@ -552,17 +552,17 @@ const checkers = new function() {
 				this['timer'+this.turn] = state[key];
 				render(['timer '+this.turn]);
 				
-				console.log('player '+this.turn, this['timer'+this.turn]);
+				console.log('turn', 'player '+this.turn, this['timer'+this.turn]);
 			} else if (key == 'timer1') {
 				this[key] = state[key];
 				render(['timer 1']);
 				
-				console.log('player 1', this[key]);
+				console.log('disconnect', 'player 1', this[key]);
 			} else if (key == 'timer2') {
 				this[key] = state[key];
 				render(['timer 2']);
 				
-				console.log('player 2', this[key]);
+				console.log('disconnect', 'player 2', this[key]);
 			} else {
 				this[key] = state[key];
 			}

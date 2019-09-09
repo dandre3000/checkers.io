@@ -51,5 +51,9 @@
 		sock.on('disconnect', () => {
 			matchMaker.disconnect(sock);
 		});
+		
+		sock.on('reconnect', () => {
+			login.reconnect(sock);
+		});
 	});
 })();
