@@ -186,6 +186,7 @@ module.exports = new function() {
 				match.players.delete(socket.username);
 				socket.leave(id);
 				socket.emit('leftGame', { gameId: id });
+				this.namespace.to(id).emit('forfeit', socket.username);
 				
 				console.log(socket.username + " has left " + id);
 				console.log(matchCollection.list.get(id));
@@ -323,7 +324,7 @@ module.exports = new function() {
 		
 		/**
 		 * game over
-		 * @param {bool}
+		 * @param {string}
 		 */
 		socket.on('game over', winner => {
 			const id = alreadyInGame(socket.username);

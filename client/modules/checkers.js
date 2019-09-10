@@ -265,51 +265,10 @@ const checkers = new function() {
 		}
 	};
 	
-	let dt = 1000 / fps;
-	let accumulatedTime = 0;
-	let lastTime = 0;
-	var loop = null;
-	const update = dt => {
-		
-		if (!gameOver) {
-			if (this.turn == this.playerIdx) {
-				// timer
-				turnTimer.countDown(dt);
-				
-				if (turnTimer.ms == 0) {
-					this.endGame(false);
-					socket.emit('game over', true);
-				}
-			}
-		}
-	};
-	
-	const updateProxy = time => {
-		if (lastTime) {
-			accumulatedTime = time - lastTime + accumulatedTime;
-		}
-		if (accumulatedTime > 1000) {
-			accumulatedTime = 1000;
-		}
-		
-		while (accumulatedTime > dt) {
-			update(dt);
-			accumulatedTime -= dt;
-		}
-		//render();
-
-		if (time) {
-			lastTime = time;
-		}
-		loop = requestAnimationFrame(updateProxy);
-	}
-	
 	this.connect = s => {
 		socket = s;
 		matchmaker.connect(socket, this);
 	}
-	
-	
 	
 	var canJump = false;
 	// get possible moves for board ui and determines if player can jump
@@ -491,7 +450,7 @@ const checkers = new function() {
 					setupMoves();
 					if (winCondition()) {
 						this.endGame(true);
-						socket.emit('game over', false);
+						socket.emit('game over', socket.username);
 					}
 					
 					endTurn();
@@ -572,12 +531,12 @@ const checkers = new function() {
 	this.timeOut = () => {
 		if (this.turn != this.playerIdx) {
 			this.endGame(true);
-			socket.emit('game over', false);
+			socket.emit('game over', socket.username);
 		}
 	};
 	
 	this.endGame = w => {
-		winner = w;
+		winner = w == socket.username ? true : false;
 		gameOver = true;
 		render(['hud', 'turn timer', 'afk timer']);
 	};

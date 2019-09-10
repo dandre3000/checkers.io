@@ -97,23 +97,31 @@ const matchmaker = new function() {
 			log.text(match.gameOwner + ' destroyed game: ' + match.gameId);
 		});
 		
-		socket.on('matches', data => { 
+		socket.on('matches', data => {
 			log.text(data);
 		});
 		
-		socket.on('state update', state => { 
+		socket.on('state update', state => {
 			game.stateUpdate(state);
 		});
 		
-		socket.on('game over', winner => { 
+		socket.on('forfeit', player => {
+			log.text(player+' forfeits!');
+			if (game.players.size == 2) {
+				game.endGame(socket.username);
+				socket.emit('game over', socket.username);
+			}
+		});
+		
+		socket.on('game over', winner => {
 			game.endGame(winner);
 		});
 		
-		socket.on('drop player', player => { 
+		socket.on('drop player', player => {
 			game.dropPlayer(player);
 		});
 		
-		socket.on('timeout', () => { 
+		socket.on('timeout', () => {
 			game.timeOut();
 		});
 		
