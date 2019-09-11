@@ -530,7 +530,7 @@ const checkers = new function() {
 	
 	this.timeOut = () => {
 		if (this.turn != this.playerIdx) {
-			this.endGame(true);
+			this.endGame(socket.username);
 			socket.emit('game over', socket.username);
 		}
 	};

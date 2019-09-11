@@ -329,6 +329,9 @@ module.exports = new function() {
 		socket.on('game over', winner => {
 			const id = alreadyInGame(socket.username);
 			socket.to(id).emit('game over', winner);
+			
+			matchCollection.list.delete(id);
+			--matchCollection.count;
 		});
 		
 		socket.on('joinLobby', () => {
@@ -354,18 +357,24 @@ module.exports = new function() {
 		const id = alreadyInGame(socket.username);
 		if (id) {
 			const match = matchCollection.list.get(id);
-			// if it's the player's turn save current time left and start disconnect timer
-			const player = match.players.get(socket.username);
-			if (match.state.turn == player.order) {
-				match.timer.stop();
+			if (match.started) {
+				// if it's the player's turn save current time left and start disconnect timer
+				const player = match.players.get(socket.username);
+				if (match.state.turn == player.order) {
+					match.timer.stop();
+					
+					player.timer.start(1000, () => {
+						this.namespace.to(id).emit('state update', {['timer'+player.order]: player.timer.getTime()}); // strings are arrays
+					});
+				}
+				player.connected = false;
 				
-				player.timer.start(1000, () => {
-					this.namespace.to(id).emit('state update', {['timer'+player.order]: player.timer.getTime()}); // strings are arrays
-				});
+				socket.to(id).emit('drop player', socket.username);
+			} else {
+				matchCollection.list.delete(id);
+				--matchCollection.count;
 			}
-			player.connected = false;
 			
-			socket.to(id).emit('drop player', socket.username);
 		}
 		// logout
 		login.disconnect(socket);
