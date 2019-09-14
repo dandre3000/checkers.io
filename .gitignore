@@ -78,3 +78,6 @@ typings/
 # Development files
 dev-server.bat
 update-heroku.bat
+
+# pdf
+*.pdf
