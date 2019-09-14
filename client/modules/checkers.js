@@ -29,6 +29,8 @@ const checkers = new function() {
 	var target = null;
 	var winner = null;
 	var gameOver = false;
+	var bLColor = 0;
+	var placementColor = 1;
 	
 	this.element = $('body');
 	this.players = null; // players
@@ -73,7 +75,7 @@ const checkers = new function() {
 			
 			b.forEach((row, i) => {
 				row.forEach((col, j) => {
-					if ((i + j) % 2 === 1) {
+					if ((i + j) % 2 == placementColor) {
 						const piece = {
 							type: 'man',
 							moves: []
@@ -139,7 +141,7 @@ const checkers = new function() {
 					}
 					
 					// squares
-					ctx.fillStyle = (i + j) % 2 === 0 ? this.colors[0] : this.colors[1];
+					ctx.fillStyle = (i + j) % 2 == bLColor ? this.colors[0] : this.colors[1];
 					// possible moves
 					if (this.moves) {
 						this.moves.forEach(m => {
@@ -176,12 +178,20 @@ const checkers = new function() {
 		};
 	};
 	
+	
 	const setRules = format => {
 		switch (format) {
 			case 'American':
 				this.board.w = 8;
 				this.board.h = 8;
 				this.turn = 1;
+				break;
+			case 'Spanish':
+				this.board.w = 8;
+				this.board.h = 8;
+				this.turn = 1;
+				bLColor = 1;
+				placementColor = 0;
 				break;
 			case 'South African':
 				this.board.w = 14;
