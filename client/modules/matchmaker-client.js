@@ -1,9 +1,7 @@
 /*!
  * matchmaker: client
  * 
- * todo:
- * continue match on refresh
- * reconnect timer
+ * todo: rematch
  */
 
 import {log} from './log.js';
@@ -28,11 +26,22 @@ const matchmaker = new function() {
 	this.connect = (socket, game) => {
 		//Join into an Existing Game
 		const joinGame = () => {
+			if (game.over) {
+				game.kill();
+			}
 			socket.emit('joinGame', this.options);
 		};
 		
-		function leaveGame(){
-			socket.emit('leaveGame', game.playerIdx);
+		const leaveGame = () => {
+			if (game.started && !game.over) {
+				if (window.confirm("Are you sure you want to forfeit?")) {
+					game.kill();
+					socket.emit('leaveGame', game.playerIdx);
+				}
+			} else {
+				game.kill();
+				socket.emit('leaveGame', game.playerIdx);
+			}
 		};
 		
 		$joinGame.click(() => {
@@ -80,7 +89,6 @@ const matchmaker = new function() {
 		socket.on('leftGame', data => {
 			window.location.hash = '';
 			
-			game.kill();
 			log.text('Leaving Game ' + data.gameId);
 		});
 		

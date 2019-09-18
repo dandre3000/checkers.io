@@ -28,10 +28,11 @@ const checkers = new function() {
 	var id = null; // match id
 	var target = null;
 	var winner = null;
-	var gameOver = false;
+	this.over = false;
 	var bLColor = 0;
 	var placementColor = 1;
 	
+	this.started = false;
 	this.element = $('body');
 	this.players = null; // players
 	this.playerIdx = 1; // is this player 1, 2...
@@ -237,7 +238,7 @@ const checkers = new function() {
 			ctx.textAlign = 'center';
 			ctx.font = '32px sans-serif';
 			ctx.fillText('VS', canv.width / 2, 48);
-			if (gameOver) {
+			if (this.over) {
 				if (winner) {
 					ctx.fillText('You Win!', canv.width / 2, 96);
 				} else {
@@ -429,7 +430,7 @@ const checkers = new function() {
 		mouseMove(event);
 		
 		const b = this.board.data;
-		if (!gameOver && this.board.hover && this.turn == this.playerIdx) { // is the mouse over the board
+		if (!this.over && this.board.hover && this.turn == this.playerIdx) { // is the mouse over the board
 			if (!this.board.selected) {
 				if (b[this.board.hover[0]][this.board.hover[1]]) { // is mouse over a piece, is it your piece and if no piece is currently selected
 					select();
@@ -505,6 +506,8 @@ const checkers = new function() {
 		ctx.fillRect(0, 0, canv.width, canv.height);
 		
 		render('all');
+		
+		this.started = true;
 	};
 	
 	this.stateUpdate = state => {
@@ -547,13 +550,14 @@ const checkers = new function() {
 	
 	this.endGame = w => {
 		winner = w == socket.username ? true : false;
-		gameOver = true;
+		this.over = true;
 		render(['hud', 'turn timer', 'afk timer']);
 	};
 	
 	this.kill = () => {
 		winner = null;
-		gameOver = false;
+		this.over = false;
+		this.started = false;
 		//cancelAnimationFrame(loop);
 		canvas.remove();
 	};
