@@ -160,7 +160,10 @@ const chat = new function() {
 		$inputMessage.focus();
 	});
 	
-	// connection
+	/**
+	 * create socket events
+	 * @param {Socket}
+	 */
 	this.connect = (socket) => {
 		// save username in socket session
 		socket.username = null;
@@ -323,7 +326,10 @@ const chat = new function() {
 		});
 	};
 	
-	// reconnection
+	/**
+	 * handle socket reconnection
+	 * @param {Socket}
+	 */
 	this.reconnect = socket => {
 		log.text(socket.username+' you have been reconnected');
 		if (socket.username) {
