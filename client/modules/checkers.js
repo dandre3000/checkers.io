@@ -29,8 +29,8 @@ const checkers = new function() {
 	var target = null;
 	var winner = null;
 	this.over = false;
-	var bLColor = 0;
-	var placementColor = 1;
+	
+	
 	
 	this.started = false;
 	this.element = $('body');
@@ -49,6 +49,8 @@ const checkers = new function() {
 		this.h = 8;
 		this.space = 32;
 		this.colors = ['red', 'black'];
+		this.bLColor = 1; // bottom left color; 0 for dark, 1 for light
+		this.placementColor = 1; // which color pieces are paced on
 		
 		this.getWidth = () => {
 			return this.w * this.space;
@@ -74,9 +76,14 @@ const checkers = new function() {
 				b[i] = Array(this.w).fill(0);
 			});
 			
+			let colorVar = this.placementColor;
+			// if bottom left color is light
+			if (this.bLColor == 0) {
+				colorVar = this.placementColor == 0 ? 1 : 0;
+			}
 			b.forEach((row, i) => {
 				row.forEach((col, j) => {
-					if ((i + j) % 2 == placementColor) {
+					if ((i + j) % 2 == colorVar) {
 						const piece = {
 							type: 'man',
 							moves: []
@@ -142,7 +149,7 @@ const checkers = new function() {
 					}
 					
 					// squares
-					ctx.fillStyle = (i + j) % 2 == bLColor ? this.colors[0] : this.colors[1];
+					ctx.fillStyle = (i + j) % 2 == this.bLColor ? this.colors[1] : this.colors[0];
 					// possible moves
 					if (this.moves) {
 						this.moves.forEach(m => {
@@ -186,18 +193,22 @@ const checkers = new function() {
 				this.board.w = 8;
 				this.board.h = 8;
 				this.turn = 1;
+				this.board.bLColor = 1;
+				this.board.placementColor = 1;
 				break;
 			case 'Spanish':
 				this.board.w = 8;
 				this.board.h = 8;
 				this.turn = 1;
-				bLColor = 1;
-				placementColor = 0;
+				this.board.bLColor = 0;
+				this.board.placementColor = 1;
 				break;
 			case 'South African':
 				this.board.w = 14;
 				this.board.h = 14;
 				this.turn = 1;
+				this.board.bLColor = 1;
+				this.board.placementColor = 1;
 				break;
 		}
 	};
