@@ -72,7 +72,7 @@ module.exports = new function() {
 		}
 		
 		match.id = id;
-		match.start = false;
+		match.started = false;
 		match.players = new Map();
 		match.players.set(socket.username, {
 			order: 1,
@@ -130,7 +130,7 @@ module.exports = new function() {
 		});
 		
 		if (match.players.size == MAX_PLAYERS) {
-			match.start = true;
+			match.started = true;
 			match.timer.start(1000, () => {
 				this.namespace.to(id).emit('state update', {turnTime: match.timer.getTime()});
 			});
@@ -230,7 +230,7 @@ module.exports = new function() {
 				// join socket to match room
 				socket.join(id);
 				// only restart live matches
-				if (match.start) {
+				if (match.started) {
 					// stop disconnect timer
 					const player = match.players.get(socket.username);
 					player.connected = true;
