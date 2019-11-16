@@ -1,7 +1,7 @@
 /*!
  * checkers
  *
- * todo: touch support/ clean up board feedback, put timers on server
+ * todo: touch support/ clean up board feedback (pice selected, must jump)
  */
 
 import {canvas} from './canvas.js';
@@ -28,10 +28,8 @@ const checkers = new function() {
 	var id = null; // match id
 	var target = null;
 	var winner = null;
+	
 	this.over = false;
-	
-	
-	
 	this.started = false;
 	this.element = $('body');
 	this.players = null; // players
